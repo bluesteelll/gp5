@@ -1,0 +1,12 @@
+# Данные
+data/raw/
+data/processed/
+
+# Артефакты
+figures/*.png
+__pycache__/
+
+# Окружение и секреты
+.venv*/
+.env
+!.env.example
