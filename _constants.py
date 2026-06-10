@@ -7,6 +7,7 @@ PROJECT = Path(__file__).resolve().parent
 RAW = PROJECT / "data" / "raw"
 PROCESSED = PROJECT / "data" / "processed"
 FIGURES = PROJECT / "figures"
+REPORTS = PROJECT / "reports"
 
 # Сырые JSON, которые скачиваем с Kaggle
 FILES = [
@@ -28,3 +29,12 @@ REVIEWS_PARQUET = PROCESSED / "reviews.parquet"
 USERS_PARQUET = PROCESSED / "users.parquet"
 TIPS_PARQUET = PROCESSED / "tips.parquet"
 META_PARQUET = PROCESSED / "_meta.parquet"
+
+# Города среза по умолчанию (нормализованные ключи "City, ST").
+# Набор выбран в notebooks/EDA_1.ipynb: 2-3 крупных города со сбалансированными
+# классами оценок и максимумом типсов (сырьё для Задачи 2), суммарно ~600-700k отзывов.
+DEFAULT_CITIES = [
+    "Tucson, AZ",
+    "St Petersburg, FL",
+    "Edmonton, AB",
+]

@@ -5,11 +5,12 @@
 # Делает «под ключ»:
 #   1) создаёт виртуальное окружение .venv и ставит зависимости;
 #   2) скачивает нужные файлы Yelp Open Dataset с Kaggle  (scripts/download.py);
-#   3) делает срез одного метро и parquet-таблицы          (scripts/preprocess.py).
+#   3) нарезает срез выбранных городов в parquet-таблицы   (scripts/preprocess.py).
 #
 # Использование:
-#   ./setup.sh                       # авто-выбор крупнейшего метро
-#   ./setup.sh --city Philadelphia --state PA
+#   ./setup.sh                                  # срез по умолчанию (DEFAULT_CITIES)
+#   ./setup.sh --cities "Tampa, FL;Boise, ID"   # свой набор городов
+#   ./setup.sh --city Philadelphia --state PA   # один город
 
 set -euo pipefail
 
