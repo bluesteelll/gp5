@@ -1,9 +1,9 @@
 # Данные
-data/raw/
-data/processed/
+data/raw/*.json
+data/processed/*.parquet
 
 # Артефакты
-figures/*.png
+artifacts/*.png
 __pycache__/
 
 # Окружение и секреты

@@ -112,7 +112,7 @@ yelp_project/
 │   ├── raw/                    # необработанный датасет Yelp
 │   └── processed/              # срез выбранных городов (business/reviews/users/tips)
 │
-├── figures/                    # выгруженные графики EDA для презентации в формате .png
+├── artifacts/                  # выгруженные графики EDA для презентации в формате .png
 └── reports/                    # отчёты EDA_1: eda_stats.json, selected_cities.json
 ```
 

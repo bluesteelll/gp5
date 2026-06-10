@@ -6,7 +6,7 @@ DATASET = "yelp-dataset/yelp-dataset"
 PROJECT = Path(__file__).resolve().parent
 RAW = PROJECT / "data" / "raw"
 PROCESSED = PROJECT / "data" / "processed"
-FIGURES = PROJECT / "figures"
+ARTIFACTS = PROJECT / "artifacts"
 REPORTS = PROJECT / "reports"
 
 # Сырые JSON, которые скачиваем с Kaggle
