@@ -4,8 +4,8 @@
 #
 # Делает «под ключ»:
 #   1) создаёт виртуальное окружение .venv и ставит зависимости;
-#   2) скачивает нужные файлы Yelp Open Dataset с Kaggle  (scripts/01_download.py);
-#   3) делает срез одного метро и parquet-таблицы          (scripts/02_preprocess.py).
+#   2) скачивает нужные файлы Yelp Open Dataset с Kaggle  (scripts/download.py);
+#   3) делает срез одного метро и parquet-таблицы          (scripts/preprocess.py).
 #
 # Использование:
 #   ./setup.sh                       # авто-выбор крупнейшего метро
@@ -56,8 +56,8 @@ fi
 echo "   токен найден"
 
 echo "==> [4/4] Скачивание и первичная обработка"
-python3 "$SCRIPT_DIR/scripts/01_download.py"
-python3 "$SCRIPT_DIR/scripts/02_preprocess.py" "$@"
+python3 "$SCRIPT_DIR/scripts/download.py"
+python3 "$SCRIPT_DIR/scripts/preprocess.py" "$@"
 
 echo ""
 echo "==> Done:) Окружение настроено."
