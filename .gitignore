@@ -1,6 +1,7 @@
 # Данные
 data/raw/*.json
 data/processed/*.parquet
+data/mismatch/*.parquet
 
 # Артефакты
 artifacts/*.png

@@ -31,6 +31,10 @@ USERS_PARQUET = PROCESSED / "users.parquet"
 TIPS_PARQUET = PROCESSED / "tips.parquet"
 META_PARQUET = PROCESSED / "_meta.parquet"
 
+# Датасет для детектора несогласованности «текст↔оценка» (синтетическая порча, отдельная папка).
+MISMATCH = PROJECT / "data" / "mismatch"
+MISMATCH_PARQUET = MISMATCH / "mismatch_dataset.parquet"
+
 # Города среза по умолчанию (нормализованные ключи "City, ST").
 # Набор выбран в notebooks/EDA_1.ipynb: 2-3 крупных города со сбалансированными
 # классами оценок и максимумом типсов (сырьё для Задачи 2), суммарно ~600-700k отзывов.

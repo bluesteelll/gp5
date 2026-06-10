@@ -12,6 +12,10 @@ scikit-learn>=1.4
 wordcloud>=1.9
 langid>=1.1
 
+# Глубокое обучение (Задача 2 — текст)
+torch>=2.2
+transformers>=4.40
+
 # Работа с гоутбуками
 jupyterlab
 nbformat
