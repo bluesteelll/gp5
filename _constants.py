@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 DATASET = "yelp-dataset/yelp-dataset"
@@ -38,3 +39,30 @@ DEFAULT_CITIES = [
     "St Petersburg, FL",
     "Edmonton, AB",
 ]
+
+
+# ── Переменные окружения (.env) ───────────────────────────────────────────
+def load_dotenv(path: str | Path | None = None) -> None:
+    """Подхватывает переменные из .env в os.environ (реальное окружение в приоритете)."""
+    p = Path(path) if path else PROJECT / ".env"
+    if not p.exists():
+        return
+    for raw in p.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        os.environ.setdefault(key.strip(), val.strip().strip('"').strip("'"))
+
+
+def env_bool(name: str, default: bool = False) -> bool:
+    v = os.environ.get(name)
+    return default if v is None else v.strip().lower() in {"1", "true", "yes", "on", "y"}
+
+
+# Грузим .env при импорте — чтобы флаги работали и в скриптах, и в ноутбуках.
+load_dotenv()
+
+# Флаги (по умолчанию False)
+ENABLE_LOGGING = env_bool("ENABLE_LOGGING", False)      # логирование экспериментов с моделями (используется позже)
+ENABLE_ARTIFACTS = env_bool("ENABLE_ARTIFACTS", False)  # сохранять ли картинки EDA в artifacts/

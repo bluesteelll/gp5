@@ -2,22 +2,12 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-PROJECT = Path(__file__).resolve().parents[1]
+from _constants import load_dotenv
 
 
 def load_env(path: str | Path | None = None) -> None:
     """Загружает .env в окружение и настраивает Kaggle-аутентификацию."""
-    p = Path(path) if path else PROJECT / ".env"
-    if p.exists():
-        for raw in p.read_text(encoding="utf-8").splitlines():
-            line = raw.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, _, val = line.partition("=")
-            key = key.strip()
-            val = val.strip().strip('"').strip("'")
-            # Уже заданное в реальном окружении имеет приоритет над .env.
-            os.environ.setdefault(key, val)
+    load_dotenv(path)
     _materialize_kaggle_token()
 
 
