@@ -1,0 +1,106 @@
+{
+  "final_model": "ансамбль 3 сидов (ёмкость+ и классиф. голова)",
+  "final_test_rmse": 1.045245216342815,
+  "single_seed42_val_rmse": 1.0591096138538674,
+  "ensemble_val_rmse": 1.0563489346408297,
+  "model_config": {
+    "arch": "InteractionMLP",
+    "loss_kind": "CE",
+    "decode": "softmax_expectation_1to5",
+    "ucols": [
+      "num_user_review_count",
+      "num_average_stars",
+      "num_user_useful",
+      "num_user_funny",
+      "num_user_cool",
+      "num_fans",
+      "num_n_friends",
+      "num_n_elite_years",
+      "num_account_age_days",
+      "u_prior_mean",
+      "u_cnt",
+      "u_days_prev",
+      "u_has_hist"
+    ],
+    "bcols": [
+      "num_biz_avg_stars",
+      "num_biz_review_count",
+      "num_is_open",
+      "num_price_range",
+      "num_price_known",
+      "b_prior_mean",
+      "b_cnt",
+      "b_days_prev",
+      "b_has_hist"
+    ],
+    "ccols": [
+      "num_user_avg_minus_biz",
+      "month_sin",
+      "month_cos",
+      "dow_sin",
+      "dow_cos",
+      "hour_sin",
+      "hour_cos",
+      "is_weekend"
+    ],
+    "n_cat_vocab": 424,
+    "n_city": 4,
+    "maxlen": 10,
+    "kwargs": {
+      "d_cat": 32,
+      "d_branch": 48,
+      "hidden": 128,
+      "top": [
+        256,
+        128
+      ],
+      "out": 5
+    }
+  },
+  "test_rmse": {
+    "MLP плоский (MSE)": 1.0599984780004696,
+    "MLP плоский (Huber)": 1.0919216377148147,
+    "MLP взаимодействие (MSE)": 1.0547664370231602,
+    "MLP взаимодействие (Huber)": 1.0818117102088818,
+    "референс: взаимодействие (MSE)": 1.0547664370231602,
+    "ёмкость+": 1.050862946781093,
+    "DCN-v2 (3 cross-слоя)": 1.0640037007610839,
+    "классиф. голова (E[stars])": 1.050145539599643,
+    "ёмкость+ и классиф. голова": 1.0476440618348615
+  },
+  "test_rmse_bizemb_ablation": 1.070633140621685,
+  "feature_ablation": {
+    "база (без prior)": 1.1017905823428822,
+    "+ prior юзера и заведения": 1.0547664370231602,
+    "+ кросс (гео, цена)": 1.1019035378855095,
+    "+ всё (prior + кросс)": 1.0551202685978327
+  },
+  "multiseed_test_rmse": {
+    "плоский": {
+      "mean": 1.0595598030522955,
+      "std": 0.001771080248241115
+    },
+    "взаимодействие": {
+      "mean": 1.055057406253482,
+      "std": 0.0006994708951517126
+    }
+  },
+  "cls_head_multiseed_test_rmse": {
+    "mean": 1.0518955977941655,
+    "std": 0.0013880413019762864
+  },
+  "baselines": {
+    "глобальное среднее train": 1.6533636950480277,
+    "средняя заведения (biz_avg_stars)": 1.407907577503139,
+    "средняя юзера (average_stars)": 1.2305047679361796,
+    "bias: user_avg + biz_avg - mu": 1.1209769593851575,
+    "Ridge на 23 числовых (с prior)": 1.118473482012647
+  },
+  "segments_final": {
+    "все": 1.045245216342815,
+    "warm юзер": 1.1064037830820572,
+    "cold юзер": 1.00697930981307,
+    "warm заведение": 1.0674207367745105,
+    "cold заведение": 0.9514968444556631
+  }
+}
