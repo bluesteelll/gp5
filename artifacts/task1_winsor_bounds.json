@@ -1,0 +1,30 @@
+{
+"biz_review_count": {
+"lo": 5.0,
+"hi": 1551.0
+},
+"user_review_count": {
+"lo": 1.0,
+"hi": 1256.0
+},
+"user_useful": {
+"lo": 0.0,
+"hi": 4878.0
+},
+"user_funny": {
+"lo": 0.0,
+"hi": 1642.0
+},
+"user_cool": {
+"lo": 0.0,
+"hi": 3032.0
+},
+"fans": {
+"lo": 0.0,
+"hi": 162.0
+},
+"n_friends": {
+"lo": 0.0,
+"hi": 1169.0
+}
+}
