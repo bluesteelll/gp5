@@ -18,7 +18,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-PYTHON="${python3}"
+PYTHON="${PYTHON:-python3}"
 VENV_DIR="$SCRIPT_DIR/.venv"
 
 echo "==> [1/4] Проверка интерпретатора"
