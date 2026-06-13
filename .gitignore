@@ -11,3 +11,10 @@ __pycache__/
 .venv*/
 .env
 !.env.example
+
+# MLflow (логи экспериментов; раны воспроизводятся прогоном ноутбуков)
+mlflow.db
+mlruns/
+mlartifacts/
+notebooks/mlruns/
+**/m.pt
