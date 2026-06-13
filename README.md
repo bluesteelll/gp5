@@ -98,31 +98,38 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/EDA_2.ipynb
 ## Структура репозитория
 
 ```
-yelp_project/
+gp5/
 ├── README.md                   # этот файл
 ├── .env.example                # шаблон для токена Kaggle (копируется в .env)
-├── .env                        # реальный токен(необходимо создать файл окружения)
+├── .env                        # реальный токен (создаётся вручную)
 ├── .gitignore
 ├── requirements.txt            # зависимости Python
 ├── setup.sh                    # bootstrap: venv + скачивание + препроцессинг
-├── _constants.py               # общие пути и имена файлов (для scripts/ и notebooks/)
+├── _constants.py               # общие пути и имена файлов
 │
 ├── scripts/
 │   ├── _env.py                 # загрузчик .env
 │   ├── download.py             # скачивает Yelp Open Dataset через Kaggle API
-│   └── preprocess.py           # нарезает выбранные города, JSONL → parquet (потоково)
+│   ├── preprocess.py           # нарезает выбранные города, JSONL → parquet (потоково)
+│   └── build_mismatch_dataset.py  # синтетический датасет для детектора «текст ↔ оценка»
 │
 ├── notebooks/
 │   ├── EDA_1.ipynb             # анализ сырого датасета + выбор городов-среза
-│   ├── EDA_2.ipynb             # глубокий EDA готового среза (табличный + текстовый блок)
-│   └── Task2_text_models.ipynb # Задача 2: TextCNN / BiLSTM / DistilBERT — обучение и сравнение
+│   ├── EDA_2.ipynb             # глубокий EDA готового среза
+│   ├── task1.ipynb             # сборка единого датасета Задачи 1 (join таблиц + чистка утечек)
+│   ├── Task1_rating_mlp.ipynb  # Задача 1: полносвязная сеть, предсказание оценки, сравнение архитектур
+│   ├── Task2_text_models.ipynb # Задача 2: TextCNN / BiLSTM / DistilBERT — тональность
+│   └── Task2_mismatch_detector.ipynb  # Задача 2: детектор «текст ↔ оценка»
 │
-├── data/                       # данные
+├── experiments/                # улучшения Задачи 1 + логирование экспериментов (MLflow)
+│
+├── data/
 │   ├── raw/                    # необработанный датасет Yelp
-│   └── processed/              # срез выбранных городов (business/reviews/users/tips)
+│   ├── processed/              # срез выбранных городов (business/reviews/users/tips)
+│   └── mismatch/               # датасет для детектора «текст ↔ оценка»
 │
-├── artifacts/                  # выгруженные графики EDA для презентации в формате .png
-└── reports/                    # отчёты EDA_1: eda_stats.json, selected_cities.json
+├── artifacts/                  # модели и артефакты Задачи 1 (.pt, scaler'ы, словари, метрики)
+└── reports/                    # eda_stats.json, selected_cities.json, task1_model_report.md, business_insights.md
 ```
 
 ## Лицензия данных

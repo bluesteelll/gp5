@@ -9,8 +9,5 @@ __pycache__/
 .env
 !.env.example
 
-mlflow.db
-mlruns/
 mlartifacts/
-notebooks/mlruns/
 **/m.pt
