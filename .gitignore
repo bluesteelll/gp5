@@ -1,18 +1,14 @@
-# Данные
 data/raw/*.json
 data/processed/*.parquet
 data/mismatch/*.parquet
 
-# Артефакты
 artifacts/*.png
 __pycache__/
 
-# Окружение и секреты
 .venv*/
 .env
 !.env.example
 
-# MLflow (логи экспериментов; раны воспроизводятся прогоном ноутбуков)
 mlflow.db
 mlruns/
 mlartifacts/
