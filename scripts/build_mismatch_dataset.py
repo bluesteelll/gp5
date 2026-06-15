@@ -49,6 +49,7 @@ def solve_transport(n_src, n_dst, q):
     res = linprog(cobj, A_ub=np.array(A_ub), b_ub=np.array(b_ub),
                   A_eq=np.array(A_eq), b_eq=np.array(b_eq),
                   bounds=[(0, None)] * nv, method="highs")
+
     x = np.floor(res.x[:len(CELLS)] + 1e-6).astype(int)
     return {c: int(x[idx[c]]) for c in CELLS}
 
@@ -59,6 +60,7 @@ def build_balanced(clean, corrupt, seed):
     q = clean["stars"].value_counts(normalize=True).reindex(STARS, fill_value=0).to_dict()
     X = solve_transport(n_src, n_dst, q)
     c_t = {t: sum(X[(s, t)] for s in STARS if (s, t) in X) for t in STARS}
+
     corrupt = corrupt.sample(frac=1.0, random_state=seed).reset_index(drop=True)
     new = np.full(len(corrupt), -1, dtype=int)
     sa = corrupt["stars"].to_numpy()
@@ -71,6 +73,7 @@ def build_balanced(clean, corrupt, seed):
             cur += k
     corrupt = corrupt.assign(orig_stars=corrupt["stars"], stars=new, label=1)
     corrupt = corrupt[corrupt["stars"] > 0]
+
     parts = []
     for t in STARS:
         g = clean[clean["stars"] == t]
@@ -83,6 +86,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--mode", choices=["balanced", "random"], default="balanced")
 ap.add_argument("--seed", type=int, default=42)
 args = ap.parse_args()
+
 
 if not REVIEWS_PARQUET.exists():
     print("нет reviews.parquet - сначала preprocess.py")

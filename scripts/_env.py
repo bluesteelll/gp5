@@ -15,4 +15,6 @@ def load_env(path=None):
 
 
 def have_kaggle_creds():
-    return bool(os.environ.get("KAGGLE_API_TOKEN")) or (Path.home() / ".kaggle" / "access_token").exists()
+    if os.environ.get("KAGGLE_API_TOKEN"):
+        return True
+    return (Path.home() / ".kaggle" / "access_token").exists()

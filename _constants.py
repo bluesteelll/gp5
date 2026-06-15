@@ -47,9 +47,12 @@ def load_dotenv(path=None):
 
 def env_bool(name, default=False):
     v = os.environ.get(name)
-    return default if v is None else v.strip().lower() in {"1", "true", "yes", "on", "y"}
+    if v is None:
+        return default
+    return v.strip().lower() in {"1", "true", "yes", "on", "y"}
 
 
 load_dotenv()
+
 ENABLE_LOGGING = env_bool("ENABLE_LOGGING", False)
 ENABLE_ARTIFACTS = env_bool("ENABLE_ARTIFACTS", False)
