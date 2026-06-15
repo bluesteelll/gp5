@@ -3,6 +3,8 @@ data/processed/*.parquet
 data/mismatch/*.parquet
 
 artifacts/*.png
+artifacts/*.json
+artifacts/*.joblib
 __pycache__/
 
 .venv*/
