@@ -1,12 +1,10 @@
 import argparse, sys
 from pathlib import Path
-
 import polars as pl
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from _constants import (PROCESSED, BUSINESS, REVIEW, USER, TIP, BUSINESS_PARQUET,
                         REVIEWS_PARQUET, USERS_PARQUET, TIPS_PARQUET, META_PARQUET, DEFAULT_CITIES)
-
 
 def city_key():
     c = (pl.col("city").fill_null("").str.strip_chars().str.to_lowercase()
@@ -15,7 +13,6 @@ def city_key():
          .str.replace_all(r"\s+", " ")
          .str.strip_chars().str.to_titlecase())
     return (c + pl.lit(", ") + pl.col("state").fill_null("")).alias("city_state")
-
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--cities", default=None)
@@ -31,7 +28,8 @@ for f in (BUSINESS, REVIEW, USER):
 if args.cities:
     keys = [c.strip() for c in args.cities.split(";") if c.strip()]
 elif args.city:
-    keys = [pl.DataFrame({"city": [args.city], "state": [args.state or ""]}).with_columns(city_key())["city_state"][0]]
+        tmp = pl.DataFrame({"city": [args.city], "state": [args.state or ""]})
+        keys = [tmp.with_columns(city_key())["city_state"][0]]
 else:
     keys = list(DEFAULT_CITIES)
 print("города:", keys)
@@ -49,8 +47,7 @@ if "attributes" in sub.columns:
     except Exception:
         price = None
 
-keep = ["business_id", "name", "city", "state", "city_state", "postal_code",
-        "latitude", "longitude", "stars", "review_count", "is_open", "categories"]
+keep = ["business_id", "name", "city", "state", "city_state", "postal_code","latitude", "longitude", "stars", "review_count", "is_open", "categories"]
 out = sub.select([c for c in keep if c in sub.columns])
 if price is not None:
     out = out.with_columns(price.alias("pr"))
@@ -80,7 +77,9 @@ base = ["user_id", "review_count", "yelping_since", "useful", "funny", "cool", "
 print("users.parquet:", pl.read_parquet(USERS_PARQUET, columns=["user_id"]).height)
 
 if TIP.exists():
-    pl.scan_ndjson(TIP, infer_schema_length=2000).filter(pl.col("business_id").is_in(biz_ids)).sink_parquet(TIPS_PARQUET)
+    tips = pl.scan_ndjson(TIP, infer_schema_length=2000)
+    tips = tips.filter(pl.col("business_id").is_in(biz_ids))
+    tips.sink_parquet(TIPS_PARQUET)
     print("tips.parquet:", pl.read_parquet(TIPS_PARQUET, columns=["business_id"]).height)
 
 pl.DataFrame({"cities": [" + ".join(keys)], "n_cities": [len(keys)], "n_business": [out.height],

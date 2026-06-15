@@ -1,8 +1,6 @@
 import os
 from pathlib import Path
-
 from _constants import load_dotenv
-
 
 def load_env(path=None):
     load_dotenv(path)
@@ -12,7 +10,6 @@ def load_env(path=None):
         f.parent.mkdir(exist_ok=True)
         f.write_text(t.strip())
         os.chmod(f, 0o600)
-
 
 def have_kaggle_creds():
     if os.environ.get("KAGGLE_API_TOKEN"):

@@ -9,12 +9,7 @@ PROCESSED = PROJECT / "data" / "processed"
 ARTIFACTS = PROJECT / "artifacts"
 REPORTS = PROJECT / "reports"
 
-FILES = [
-    "yelp_academic_dataset_business.json",
-    "yelp_academic_dataset_review.json",
-    "yelp_academic_dataset_user.json",
-    "yelp_academic_dataset_tip.json",
-]
+FILES = ["yelp_academic_dataset_business.json","yelp_academic_dataset_review.json","yelp_academic_dataset_user.json","yelp_academic_dataset_tip.json",]
 
 BUSINESS = RAW / "yelp_academic_dataset_business.json"
 REVIEW = RAW / "yelp_academic_dataset_review.json"
@@ -34,7 +29,10 @@ DEFAULT_CITIES = ["Tucson, AZ", "St Petersburg, FL", "Edmonton, AB"]
 
 
 def load_dotenv(path=None):
-    p = Path(path) if path else PROJECT / ".env"
+    if path:
+        p = Path(path)
+    else:
+        p = PROJECT / ".env"
     if not p.exists():
         return
     for line in p.read_text().splitlines():

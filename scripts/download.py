@@ -14,7 +14,7 @@ if not have_kaggle_creds():
 kaggle = shutil.which("kaggle") or str(Path(sys.executable).with_name("kaggle"))
 
 for f in FILES:
-    p = RAW / f
+    p = RAW/f
     if p.exists() and p.stat().st_size > 0:
         print("skip", f)
         continue
