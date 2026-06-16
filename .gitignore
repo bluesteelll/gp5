@@ -5,6 +5,7 @@ data/mismatch/*.parquet
 artifacts/*.png
 artifacts/*.json
 artifacts/*.joblib
+artifacts/exp_preds/
 __pycache__/
 
 .venv*/

@@ -9,6 +9,7 @@ numpy>=2.0
 matplotlib>=3.8
 seaborn>=0.13
 scikit-learn>=1.4
+scipy>=1.11
 wordcloud>=1.9
 langid>=1.1
 
