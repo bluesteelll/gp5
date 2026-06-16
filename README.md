@@ -233,6 +233,7 @@ root/
 ├── .gitignore
 ├── requirements.txt            # зависимости Python
 ├── setup.sh                    # bootstrap: venv + скачивание + препроцессинг
+├── clear_ipynb.sh              # удаляет все выводы ноутбуков 
 ├── _constants.py               # общие пути и имена файлов
 │
 ├── scripts/
