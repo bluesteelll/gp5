@@ -127,35 +127,98 @@ python scripts/preprocess.py
   > **text+stars ≈0.63** заметно выше - модель учит именно *согласованность* текста и оценки. Сигнал
   > идёт в подсказку автору при публикации и в понижение веса «шумных» оценок для рекомендателя.
 
-## Структура репозитория
+## Архитектура финальной модели (Задача 1)
+
+Финал — **ансамбль из 3 сидов** сети **InteractionMLP** (вариант «ёмкость+ и классиф. голова»):
+две ветки (пользователь / заведение) сводятся в компактные векторы, затем — **явное взаимодействие**
+в стиле DLRM (поэлементное произведение `u⊙v` + скаляр `u·v`), а голова — классификация на 5 звёзд
+с decode-ожиданием `ŷ = Σ p(k)·k`. Каждый блок MLP — это `Linear → BatchNorm → ReLU → Dropout(0.2)`.
 
 ```mermaid
-graph LR
-    ROOT(["📦 yelp_project"])
+flowchart TD
+    XU["👤 Пользователь<br/>числовые признаки + prior"]
+    XB["🏪 Заведение<br/>числовые признаки + prior"]
+    CAT["🏷️ Категории (до 10 id)"]
+    CITY["🏙️ Город · one-hot (4)"]
+    CTX["🕒 Контекст / время"]
 
-    ROOT --> CFG["⚙️ конфигурация<br/>setup.sh · _constants.py<br/>requirements.txt · .env"]
-    ROOT --> SCR["📜 scripts/<br/>download · preprocess<br/>build_mismatch_dataset"]
-    ROOT --> NB(["📓 notebooks/"])
-    ROOT --> DATA["🗃️ data/<br/>raw · processed · mismatch<br/>(не в git)"]
-    ROOT --> OUT(["📈 результаты"])
+    CAT --> EMB["EmbeddingBag → 32"]
 
-    NB --> NBE["🔍 EDA / подготовка<br/>01_eda_raw · 02_eda_slice<br/>03_task1_dataset"]
-    NB --> NB1["⭐ Задача 1 · рекомендации<br/>04_task1_rating_mlp"]
-    NB --> NB2["💬 Задача 2 · анализ отзывов<br/>05_task2_text_models<br/>06_task2_mismatch_detector"]
+    XU --> UM["Ветка юзера<br/>MLP 128 → 48"]
+    XB --> BM["Ветка заведения<br/>MLP 128 → 48"]
+    EMB --> BM
+    CITY --> BM
 
-    OUT --> LOGS["🧠 logs/ — веса всех прогонов<br/>task1 (+ final) · task2_text · task2_mismatch"]
-    OUT --> ART["🖼️ artifacts/ — графики · скейлеры · словари<br/>(регенерируются, не в git)"]
-    OUT --> REP["📄 reports/ — отчёты и метрики<br/>+ mlflow.db (трекинг, в корне)"]
+    UM --> U(["u · 48"])
+    BM --> V(["v · 48"])
 
-    classDef root fill:#1f2937,stroke:#111,color:#fff;
-    classDef cfg  fill:#fef3c7,stroke:#d97706,color:#111;
-    classDef code fill:#dbeafe,stroke:#2563eb,color:#111;
-    classDef data fill:#dcfce7,stroke:#16a34a,color:#111;
-    classDef out  fill:#fce7f3,stroke:#db2777,color:#111;
+    U --> HAD["u ⊙ v · 48"]
+    V --> HAD
+    HAD --> DOT["dot = Σ(u⊙v) · 1"]
 
-    class ROOT root;
-    class CFG cfg;
-    class SCR,NB,NBE,NB1,NB2 code;
-    class DATA data;
-    class OUT,LOGS,ART,REP out;
+    U --> CC["concat<br/>u ‖ v ‖ u⊙v ‖ dot ‖ контекст"]
+    V --> CC
+    HAD --> CC
+    DOT --> CC
+    CTX --> CC
+
+    CC --> TOP["Top-MLP 256 → 128"]
+    TOP --> LOG["5 логитов · CrossEntropy"]
+    LOG --> DEC["softmax → 𝔼[звёзды]<br/>ŷ = Σ p(k)·k, k=1..5"]
+    DEC --> OUT(["⭐ Оценка 1–5"])
+    OUT -.->|3 сида → усреднение| ENS(["🎯 Ансамбль · финал"])
+
+    classDef in   fill:#dbeafe,stroke:#2563eb,color:#111;
+    classDef br   fill:#dcfce7,stroke:#16a34a,color:#111;
+    classDef int  fill:#fef3c7,stroke:#d97706,color:#111;
+    classDef head fill:#fce7f3,stroke:#db2777,color:#111;
+
+    class XU,XB,CAT,CITY,CTX,EMB in;
+    class UM,BM,U,V br;
+    class HAD,DOT,CC int;
+    class TOP,LOG,DEC,OUT,ENS head;
+```
+
+> Почему так: оценки дискретны и бимодальны («1 или 5»), поэтому классиф. голова с матожиданием
+> бьёт регрессию одним нейроном; явные `u⊙v` и `u·v` дают модели взаимодействие «вкусов» и свойств
+> места без полумиллиона ID-эмбеддингов (контентный подход — важен для cold-start). Подробности —
+> `reports/task1_model_report.md`.
+
+## Структура репозитория
+
+```
+yelp_project/
+├── README.md                   # этот файл
+├── .env.example                # шаблон для токена Kaggle (копируется в .env)
+├── .env                        # реальный токен (создаётся вручную)
+├── .gitignore
+├── requirements.txt            # зависимости Python
+├── setup.sh                    # bootstrap: venv + скачивание + препроцессинг
+├── _constants.py               # общие пути и имена файлов
+│
+├── scripts/
+│   ├── _env.py                 # загрузчик .env
+│   ├── download.py             # скачивает Yelp Open Dataset через Kaggle API
+│   ├── preprocess.py           # нарезает выбранные города, JSONL преобразует в parquet (потоково)
+│   └── build_mismatch_dataset.py  # синтетический датасет для детектора «текст ↔ оценка»
+│
+├── notebooks/
+│   ├── 01_eda_raw.ipynb             # анализ сырого датасета + выбор городов-среза
+│   ├── 02_eda_slice.ipynb           # глубокий EDA готового среза
+│   ├── 03_task1_dataset.ipynb       # сборка единого датасета Задачи 1 (join таблиц + чистка утечек)
+│   ├── 04_task1_rating_mlp.ipynb    # Задача 1: полносвязная сеть, предсказание оценки, сравнение архитектур
+│   ├── 05_task2_text_models.ipynb   # Задача 2: TextCNN / BiLSTM / DistilBERT определяет тональность текста
+│   └── 06_task2_mismatch_detector.ipynb  # Задача 2: соответствует ли текст оценке
+│
+├── data/
+│   ├── raw/                    # необработанный датасет Yelp
+│   ├── processed/              # срез выбранных городов (business/reviews/users/tips)
+│   └── mismatch/               # датасет для детектора соответствия текста оценке
+│
+├── artifacts/                  # генерируемые артефакты: графики, скейлеры, словари (не хранятся в репозитории)
+├── logs/                       # веса всех прогонов моделей (метрики/параметры - в mlflow.db)
+│   ├── task1/                  #   прогоны Задачи 1 + final/ (ансамбль и одиночная модель)
+│   ├── task2_mismatch/
+│   └── task2_text/
+└── reports/                    # eda_stats.json, selected_cities.json, task1_model_report.md, task1_model_metrics.json
 ```
