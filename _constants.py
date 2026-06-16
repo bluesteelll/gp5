@@ -7,7 +7,6 @@ PROJECT = Path(__file__).resolve().parent
 RAW = PROJECT / "data" / "raw"
 PROCESSED = PROJECT / "data" / "processed"
 ARTIFACTS = PROJECT / "artifacts"
-REPORTS = PROJECT / "reports"
 
 FILES = ["yelp_academic_dataset_business.json","yelp_academic_dataset_review.json","yelp_academic_dataset_user.json","yelp_academic_dataset_tip.json",]
 
