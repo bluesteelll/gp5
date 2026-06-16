@@ -127,9 +127,9 @@ python scripts/preprocess.py
   > **text+stars ≈0.63** заметно выше - модель учит именно *согласованность* текста и оценки. Сигнал
   > идёт в подсказку автору при публикации и в понижение веса «шумных» оценок для рекомендателя.
 
-## Архитектура финальной модели для рекомендательной системы
+## Архитектура финальной модели (Задача 1)
 
-Итоговая архитектура модели получилась такой, что её можно достаточно понятно визуализировать. В этом нам поможет [mermaid](https://mermaid.js.org/syntax/flowchart.html). Мы имеем **ансамбль из 3 сидов** сети **InteractionMLP** (моделируем вариант «ёмкость и классиф. голова»):
+Финал — **ансамбль из 3 сидов** сети **InteractionMLP** (вариант «ёмкость+ и классиф. голова»):
 две ветки (пользователь / заведение) сводятся в компактные векторы, затем — **явное взаимодействие**
 в стиле DLRM (поэлементное произведение `u⊙v` + скаляр `u·v`), а голова — классификация на 5 звёзд
 с decode-ожиданием `ŷ = Σ p(k)·k`. Каждый блок MLP — это `Linear → BatchNorm → ReLU → Dropout(0.2)`.
@@ -184,51 +184,41 @@ flowchart TD
 > места без полумиллиона ID-эмбеддингов (контентный подход — важен для cold-start). Подробности —
 > `reports/task1_model_report.md`.
 
-## Пайплайн проекта
+## Структура репозитория
 
-Как данные текут от сырого датасета до обученных моделей и отчётов. 📓 — ноутбук, 📥/✂️/🛠️ —
-скрипт, цилиндры — файлы-данные, розовое — итоговые результаты (веса, метрики, отчёты).
-
-```mermaid
-flowchart LR
-    KAGGLE(["☁️ Kaggle<br/>Yelp Open Dataset"])
-    DL["📥 download.py"]
-    RAW[("data/raw/*.json")]
-    KAGGLE --> DL --> RAW
-
-    RAW --> NB1["📓 01_eda_raw<br/>выбор городов-среза"]
-    NB1 --> CITIES[("reports/selected_cities.json")]
-
-    RAW --> PRE["✂️ preprocess.py<br/>нарезка среза"]
-    CITIES -.->|DEFAULT_CITIES| PRE
-    PRE --> PROC[("data/processed/*.parquet<br/>business · reviews · users · tips")]
-
-    PROC --> NB2["📓 02_eda_slice<br/>глубокий EDA среза"]
-    PROC --> BMD["🛠️ build_mismatch_dataset.py"]
-    BMD --> MIS[("data/mismatch/*.parquet")]
-
-    PROC --> NB3["📓 03_task1_dataset<br/>join + признаки"]
-    NB3 --> T1[("data/processed/task1_*.parquet<br/>+ словари · скейлеры")]
-    T1 --> NB4["📓 04_task1_rating_mlp<br/>обучение InteractionMLP"]
-    NB4 --> L1[("🧠 logs/task1/ + final/")]
-    NB4 --> R1[("📄 reports/task1_model_*")]
-
-    PROC --> NB5["📓 05_task2_text_models<br/>TextCNN · BiLSTM · DistilBERT"]
-    NB5 --> L2[("🧠 logs/task2_text/")]
-    MIS --> NB6["📓 06_task2_mismatch_detector<br/>TextCNN + звезда"]
-    NB6 --> L3[("🧠 logs/task2_mismatch/")]
-
-    NB4 -.-> MLF[("📊 mlflow.db")]
-    NB5 -.-> MLF
-    NB6 -.-> MLF
-
-    classDef src  fill:#ede9fe,stroke:#7c3aed,color:#111;
-    classDef proc fill:#dbeafe,stroke:#2563eb,color:#111;
-    classDef data fill:#dcfce7,stroke:#16a34a,color:#111;
-    classDef out  fill:#fce7f3,stroke:#db2777,color:#111;
-
-    class KAGGLE src;
-    class DL,PRE,BMD,NB1,NB2,NB3,NB4,NB5,NB6 proc;
-    class RAW,CITIES,PROC,MIS,T1 data;
-    class L1,L2,L3,R1,MLF out;
+```
+yelp_project/
+├── README.md                   # этот файл
+├── .env.example                # шаблон для токена Kaggle (копируется в .env)
+├── .env                        # реальный токен (создаётся вручную)
+├── .gitignore
+├── requirements.txt            # зависимости Python
+├── setup.sh                    # bootstrap: venv + скачивание + препроцессинг
+├── _constants.py               # общие пути и имена файлов
+│
+├── scripts/
+│   ├── _env.py                 # загрузчик .env
+│   ├── download.py             # скачивает Yelp Open Dataset через Kaggle API
+│   ├── preprocess.py           # нарезает выбранные города, JSONL преобразует в parquet (потоково)
+│   └── build_mismatch_dataset.py  # синтетический датасет для детектора «текст ↔ оценка»
+│
+├── notebooks/
+│   ├── 01_eda_raw.ipynb             # анализ сырого датасета + выбор городов-среза
+│   ├── 02_eda_slice.ipynb           # глубокий EDA готового среза
+│   ├── 03_task1_dataset.ipynb       # сборка единого датасета Задачи 1 (join таблиц + чистка утечек)
+│   ├── 04_task1_rating_mlp.ipynb    # Задача 1: полносвязная сеть, предсказание оценки, сравнение архитектур
+│   ├── 05_task2_text_models.ipynb   # Задача 2: TextCNN / BiLSTM / DistilBERT определяет тональность текста
+│   └── 06_task2_mismatch_detector.ipynb  # Задача 2: соответствует ли текст оценке
+│
+├── data/
+│   ├── raw/                    # необработанный датасет Yelp
+│   ├── processed/              # срез выбранных городов (business/reviews/users/tips)
+│   └── mismatch/               # датасет для детектора соответствия текста оценке
+│
+├── artifacts/                  # генерируемые артефакты: графики, скейлеры, словари (не хранятся в репозитории)
+├── logs/                       # веса всех прогонов моделей (метрики/параметры - в mlflow.db)
+│   ├── task1/                  #   прогоны Задачи 1 + final/ (ансамбль и одиночная модель)
+│   ├── task2_mismatch/
+│   └── task2_text/
+└── reports/                    # eda_stats.json, selected_cities.json, task1_model_report.md, task1_model_metrics.json
 ```
