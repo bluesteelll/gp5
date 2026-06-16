@@ -127,50 +127,35 @@ python scripts/preprocess.py
   > **text+stars ≈0.63** заметно выше - модель учит именно *согласованность* текста и оценки. Сигнал
   > идёт в подсказку автору при публикации и в понижение веса «шумных» оценок для рекомендателя.
 
-Запуск ноутбука целиком из консоли (для Задачи 2 быстрый прогон - `ENABLE_FAST_DEV_RUN=1`):
-
-```bash
-source .venv/bin/activate
-jupyter lab notebooks/01_eda_raw.ipynb                                          # интерактивно
-jupyter nbconvert --to notebook --execute --inplace notebooks/02_eda_slice.ipynb  # целиком из консоли
-ENABLE_FAST_DEV_RUN=1 jupyter nbconvert --to notebook --execute --inplace notebooks/05_task2_text_models.ipynb
-```
-
 ## Структура репозитория
 
-```
-gp5/
-├── README.md                   # этот файл
-├── .env.example                # шаблон для токена Kaggle (копируется в .env)
-├── .env                        # реальный токен (создаётся вручную)
-├── .gitignore
-├── requirements.txt            # зависимости Python
-├── setup.sh                    # bootstrap: venv + скачивание + препроцессинг
-├── _constants.py               # общие пути и имена файлов
-│
-├── scripts/
-│   ├── _env.py                 # загрузчик .env
-│   ├── download.py             # скачивает Yelp Open Dataset через Kaggle API
-│   ├── preprocess.py           # нарезает выбранные города, JSONL преобразует в parquet (потоково)
-│   └── build_mismatch_dataset.py  # синтетический датасет для детектора «текст ↔ оценка»
-│
-├── notebooks/
-│   ├── 01_eda_raw.ipynb             # анализ сырого датасета + выбор городов-среза
-│   ├── 02_eda_slice.ipynb             # глубокий EDA готового среза
-│   ├── 03_task1_dataset.ipynb             # сборка единого датасета Задачи 1 (join таблиц + чистка утечек)
-│   ├── 04_task1_rating_mlp.ipynb  # Задача 1: полносвязная сеть, предсказание оценки, сравнение архитектур
-│   ├── 05_task2_text_models.ipynb # Задача 2: TextCNN / BiLSTM / DistilBERT определяет тональность текста
-│   └── 06_task2_mismatch_detector.ipynb  # Задача 2: соответствует ли текст оценке
-│
-├── data/
-│   ├── raw/                    # необработанный датасет Yelp
-│   ├── processed/              # срез выбранных городов (business/reviews/users/tips)
-│   └── mismatch/               # датасет для детектора соответствия текста оценке
-│
-├── artifacts/                  # генерируемые артефакты: графики, скейлеры, словари (не хранятся в репозитории)
-├── logs/                       # веса всех прогонов моделей (метрики/параметры - в mlflow.db)
-│   ├── task1/                  #   прогоны Задачи 1 + final/ (ансамбль и одиночная модель)
-│   ├── task2_mismatch/
-│   └── task2_text/
-└── reports/                    # eda_stats.json, selected_cities.json, task1_model_report.md, task1_model_metrics.json
+```mermaid
+graph LR
+    ROOT(["📦 yelp_project"])
+
+    ROOT --> CFG["⚙️ конфигурация<br/>setup.sh · _constants.py<br/>requirements.txt · .env"]
+    ROOT --> SCR["📜 scripts/<br/>download · preprocess<br/>build_mismatch_dataset"]
+    ROOT --> NB(["📓 notebooks/"])
+    ROOT --> DATA["🗃️ data/<br/>raw · processed · mismatch<br/>(не в git)"]
+    ROOT --> OUT(["📈 результаты"])
+
+    NB --> NBE["🔍 EDA / подготовка<br/>01_eda_raw · 02_eda_slice<br/>03_task1_dataset"]
+    NB --> NB1["⭐ Задача 1 · рекомендации<br/>04_task1_rating_mlp"]
+    NB --> NB2["💬 Задача 2 · анализ отзывов<br/>05_task2_text_models<br/>06_task2_mismatch_detector"]
+
+    OUT --> LOGS["🧠 logs/ — веса всех прогонов<br/>task1 (+ final) · task2_text · task2_mismatch"]
+    OUT --> ART["🖼️ artifacts/ — графики · скейлеры · словари<br/>(регенерируются, не в git)"]
+    OUT --> REP["📄 reports/ — отчёты и метрики<br/>+ mlflow.db (трекинг, в корне)"]
+
+    classDef root fill:#1f2937,stroke:#111,color:#fff;
+    classDef cfg  fill:#fef3c7,stroke:#d97706,color:#111;
+    classDef code fill:#dbeafe,stroke:#2563eb,color:#111;
+    classDef data fill:#dcfce7,stroke:#16a34a,color:#111;
+    classDef out  fill:#fce7f3,stroke:#db2777,color:#111;
+
+    class ROOT root;
+    class CFG cfg;
+    class SCR,NB,NBE,NB1,NB2 code;
+    class DATA data;
+    class OUT,LOGS,ART,REP out;
 ```
