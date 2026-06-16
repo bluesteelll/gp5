@@ -66,14 +66,23 @@ print("reviews.parquet:", rv.height)
 user_ids = rv["user_id"].unique().to_list()
 
 base = ["user_id", "review_count", "yelping_since", "useful", "funny", "cool", "fans", "average_stars"]
-(pl.scan_ndjson(USER, infer_schema_length=2000)
- .filter(pl.col("user_id").is_in(user_ids))
- .with_columns(
-     pl.when(pl.col("friends").is_null() | (pl.col("friends") == "None")).then(0)
-       .otherwise(pl.col("friends").str.split(", ").list.len()).alias("n_friends"),
-     pl.when(pl.col("elite").is_null() | (pl.col("elite") == "")).then(0)
-       .otherwise(pl.col("elite").cast(pl.Utf8).str.split(",").list.len()).alias("n_elite_years"))
- .select(base + ["n_friends", "n_elite_years"]).sink_parquet(USERS_PARQUET))
+n_friends = (
+    pl.when(pl.col("friends").is_null() | (pl.col("friends") == "None"))
+    .then(0)
+    .otherwise(pl.col("friends").str.split(", ").list.len())
+    .alias("n_friends")
+)
+n_elite_years = (
+    pl.when(pl.col("elite").is_null() | (pl.col("elite") == ""))
+    .then(0)
+    .otherwise(pl.col("elite").cast(pl.Utf8).str.split(",").list.len())
+    .alias("n_elite_years")
+)
+users = pl.scan_ndjson(USER, infer_schema_length=2000)
+users = users.filter(pl.col("user_id").is_in(user_ids))
+users = users.with_columns(n_friends, n_elite_years)
+users = users.select(base + ["n_friends", "n_elite_years"])
+users.sink_parquet(USERS_PARQUET)
 print("users.parquet:", pl.read_parquet(USERS_PARQUET, columns=["user_id"]).height)
 
 if TIP.exists():
