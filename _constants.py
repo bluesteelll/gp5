@@ -54,3 +54,4 @@ load_dotenv()
 
 ENABLE_LOGGING = env_bool("ENABLE_LOGGING", False)
 ENABLE_ARTIFACTS = env_bool("ENABLE_ARTIFACTS", False)
+ENABLE_FAST_DEV_RUN = env_bool("ENABLE_FAST_DEV_RUN", False)
