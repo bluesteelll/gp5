@@ -1,4 +1,5 @@
-import argparse, sys
+import argparse
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -28,7 +29,8 @@ def solve_transport(n_src, n_dst, q):
     idx = {c: i for i, c in enumerate(CELLS)}
     nv = len(CELLS) + 1
     M = nv - 1
-    cobj = np.zeros(nv); cobj[M] = -1.0
+    cobj = np.zeros(nv)
+    cobj[M] = -1.0
     A_eq, b_eq = [], []
     for t in STARS:
         row = np.zeros(nv)
@@ -36,16 +38,20 @@ def solve_transport(n_src, n_dst, q):
             if (s, t) in idx:
                 row[idx[(s, t)]] = 1
         row[M] = -q[t]
-        A_eq.append(row); b_eq.append(0.0)
+        A_eq.append(row)
+        b_eq.append(0.0)
     A_ub, b_ub = [], []
     for s in STARS:
         row = np.zeros(nv)
         for t in ALLOWED[s]:
             row[idx[(s, t)]] = 1
-        A_ub.append(row); b_ub.append(n_src[s])
+        A_ub.append(row)
+        b_ub.append(n_src[s])
     for t in STARS:
-        row = np.zeros(nv); row[M] = q[t]
-        A_ub.append(row); b_ub.append(n_dst[t])
+        row = np.zeros(nv)
+        row[M] = q[t]
+        A_ub.append(row)
+        b_ub.append(n_dst[t])
     res = linprog(cobj, A_ub=np.array(A_ub), b_ub=np.array(b_ub),
                   A_eq=np.array(A_eq), b_eq=np.array(b_eq),
                   bounds=[(0, None)] * nv, method="highs")
@@ -94,7 +100,7 @@ if not REVIEWS_PARQUET.exists():
 
 df = pd.read_parquet(REVIEWS_PARQUET, columns=["review_id", "user_id", "business_id", "stars", "text", "date"]).copy()
 df["stars"] = df["stars"].astype(int)
-print("отзывов:", len(df), "| режим:", args.mode)
+print("отзывов", len(df), "режим", args.mode)
 
 half_clean, half_corrupt = train_test_split(df, test_size=0.5, stratify=df["stars"], random_state=args.seed)
 
@@ -115,4 +121,4 @@ assert np.all(np.abs(d1["stars"] - d1["orig_stars"]) > 1)
 
 MISMATCH.mkdir(parents=True, exist_ok=True)
 out.to_parquet(MISMATCH_PARQUET, index=False)
-print("сохранено:", len(out), "| label=0:", (out["label"] == 0).sum(), "| label=1:", (out["label"] == 1).sum())
+print("сохранено", len(out), "label0", int((out["label"] == 0).sum()), "label1", int((out["label"] == 1).sum()))
